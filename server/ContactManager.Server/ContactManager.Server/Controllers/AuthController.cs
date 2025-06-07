@@ -24,15 +24,11 @@ namespace ContactManager.Server.Controllers
              
         }
 
-        // POST: api/auth/register
         [HttpPost("register")]
         public async Task<ActionResult<User>> Register(RegisterDto registerDto)
         {
-            // Validate input
             if (await _context.Users.AnyAsync(u => u.Email == registerDto.Email))
                 return BadRequest("Email already exists.");
-
-            // Hash password
             
             using var hmac = new HMACSHA512(StaticHmacKey);
             var user = new User
@@ -49,28 +45,23 @@ namespace ContactManager.Server.Controllers
             return Ok(new { user.Id, user.Email, user.Name });
         }
 
-        // POST: api/auth/login
         [HttpPost("login")]
         public async Task<ActionResult<string>> Login(LoginDto loginDto)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == loginDto.Email);
             if (user == null) return Unauthorized("Invalid email.");
 
-            // Verify password
             using var hmac = new HMACSHA512(StaticHmacKey);
             var computedHash = Convert.ToBase64String(
                 hmac.ComputeHash(Encoding.UTF8.GetBytes(loginDto.Password)));
-
-            //return Ok(new { computedHash , user.PasswordHash});
             
             
 
             if (computedHash != user.PasswordHash)
                 return Unauthorized("Invalid password.");
 
-            // Generate JWT
             var token = _tokenService.CreateToken(user);
-            return Ok(token);
+            return Ok(new { token });
         }
     }
 }

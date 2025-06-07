@@ -1,0 +1,17 @@
+.contact-card {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 16px;
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+  gap: 8px;
+}

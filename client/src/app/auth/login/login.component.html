@@ -12,17 +12,23 @@
       <input matInput formControlName="password" type="password" required />
     </mat-form-field>
 
-    <button
-      mat-raised-button
-      color="primary"
-      type="submit"
-      [disabled]="loginForm.invalid"
-    >
-      Login
-    </button>
-
+    <div class="form-actions">
+      <button
+        mat-raised-button
+        color="primary"
+        type="submit"
+        [disabled]="loginForm.invalid"
+      >
+        Login
+      </button>
+    </div>
     <div class="error-message" *ngIf="errorMessage">
       {{ errorMessage }}
+    </div>
+
+    <div style="margin-top: 16px">
+      <span>Don't have an account?</span>
+      <a routerLink="/auth/register">Register here</a>
     </div>
   </form>
 </mat-card>

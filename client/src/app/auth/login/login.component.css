@@ -15,3 +15,9 @@
   color: red;
   margin-top: 1rem;
 }
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}

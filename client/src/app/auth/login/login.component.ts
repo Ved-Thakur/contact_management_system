@@ -32,7 +32,8 @@ export class LoginComponent implements OnInit {
           localStorage.setItem('token', res.token);
           this.router.navigate(['/contacts']);
         },
-        error: () => {
+        error: (e) => {
+          console.error(e);
           this.errorMessage = 'Invalid credentials';
         },
       });

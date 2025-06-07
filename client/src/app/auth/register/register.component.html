@@ -68,5 +68,10 @@
     </div>
 
     <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+    <div style="margin-top: 16px">
+      <span>Already registered?</span>
+      <a routerLink="/auth/login">Login</a>
+    </div>
   </form>
 </mat-card>

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap } from 'rxjs';
+import { Router } from '@angular/router';
 
 export interface User {
   id: number;
@@ -13,11 +14,11 @@ export interface User {
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'https://localhost:5111/api/auth'; // will later update this
+  private apiUrl = 'https://localhost:7182/api/auth';
   private currentUserSubject = new BehaviorSubject<User | null>(null);
-  public currentUser$ = this.currentUserSubject.asObservable();
+  // public currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private router: Router) {
     const userJson = localStorage.getItem('currentUser');
     if (userJson) {
       this.currentUserSubject.next(JSON.parse(userJson));
@@ -44,6 +45,7 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem('currentUser');
     this.currentUserSubject.next(null);
+    this.router.navigate(['/auth/login']);
   }
 
   get currentUserValue(): User | null {

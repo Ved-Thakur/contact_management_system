@@ -2,15 +2,6 @@
   <span class="app-title">Contact Manager</span>
 
   <span class="spacer"></span>
-
-  <ng-container *ngIf="!isLoggedIn; else loggedIn">
-    <button mat-button routerLink="/auth/login">Login</button>
-    <button mat-button routerLink="/auth/register">Register</button>
-  </ng-container>
-
-  <ng-template #loggedIn>
-    <!-- <button mat-button (click)="logout()">Logout</button> -->
-  </ng-template>
 </mat-toolbar>
 
 <router-outlet></router-outlet>
