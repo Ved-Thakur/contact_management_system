@@ -21,7 +21,7 @@ export class ContactListComponent implements OnInit {
     this.loadContacts();
   }
 
-  displayedColumns: string[] = ['name', 'email', 'phone', 'actions'];
+  displayedColumns: string[] = ['name', 'email', 'phone', 'address', 'actions'];
 
   editContact(contact: Contact) {
     this.router.navigate(['contacts/edit', contact.id]);
