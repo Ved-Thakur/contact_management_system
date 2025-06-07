@@ -1,0 +1,88 @@
+# .NET and C# general
+bin/
+obj/
+*.user
+*.suo
+*.userprefs
+*.njsproj
+*.sw?
+*.vs/
+.vscode/
+*.launchsettings.json
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Sensitive files
+appsettings.Development.json
+appsettings.local.json
+*.secrets.json
+
+# NuGet packages
+.nuget/
+*.nupkg
+packages/
+
+# Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# IDE specific
+.idea/
+
+# Docker
+.dockerignore
+docker-compose.*.yml
+docker-compose.yml
+*/docker-compose.*
+*/docker-compose
+
+# Local development
+.localhistory/
+
+# Code coverage
+coverage/
+*.coverage
+*.coveragexml
+
+# VS Code
+.history/
+
+# Rider
+.idea/
+
+# Exception for migrations (keep these)
+!**/Migrations/
+!**/Migrations/**
+
+# Compiled output
+out/
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Logs
+*.log
+*.log.*
+
+# dotnet tools
+.dotnet/
+
+# VS Code workspace settings
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
