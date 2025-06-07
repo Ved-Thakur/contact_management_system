@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using FluentValidation;
 
 namespace ContactManager.Server.Controllers
 {
@@ -25,8 +27,17 @@ namespace ContactManager.Server.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<User>> Register(RegisterDto registerDto)
+        public async Task<ActionResult<User>> Register(RegisterDto registerDto, [FromServices] IValidator<RegisterDto> validator)
         {
+
+            var validationResult = await validator.ValidateAsync(registerDto);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors.Select(e => new {
+                    Field = e.PropertyName,
+                    Error = e.ErrorMessage
+                }));
+            }
             if (await _context.Users.AnyAsync(u => u.Email == registerDto.Email))
                 return BadRequest("Email already exists.");
             
@@ -46,8 +57,13 @@ namespace ContactManager.Server.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<string>> Login(LoginDto loginDto)
+        public async Task<ActionResult<string>> Login(LoginDto loginDto, [FromServices] IValidator<LoginDto> validator)
         {
+            var validationResult = await validator.ValidateAsync(loginDto);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == loginDto.Email);
             if (user == null) return Unauthorized("Invalid email.");
 

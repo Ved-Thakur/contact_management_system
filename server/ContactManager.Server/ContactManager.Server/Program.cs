@@ -1,6 +1,9 @@
 using System.Text;
 using ContactManager.Server.Data;
 using ContactManager.Server.Services;
+using ContactManager.Server.Validators;
+using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -27,6 +30,8 @@ builder.Services.AddAuthentication("Bearer")
     });
 
 builder.Services.AddControllers();
+
+builder.Services.AddValidatorsFromAssemblyContaining<RegisterDtoValidator>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 //builder.Services.AddSwaggerGen();
@@ -75,6 +80,11 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.SuppressModelStateInvalidFilter = false; // Must be FALSE for auto-validation
+});
 
 
 var app = builder.Build();

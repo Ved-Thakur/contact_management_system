@@ -4,6 +4,8 @@ using ContactManager.Server.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ContactManager.Server.Dtos;
+using FluentValidation;
 
 namespace ContactManager.Server.Controllers
 {
@@ -47,8 +49,18 @@ namespace ContactManager.Server.Controllers
 
         // POST: api/contact
         [HttpPost]
-        public async Task<ActionResult<Contact>> CreateContact(ContactDto contactDto)
+        public async Task<ActionResult<Contact>> CreateContact(ContactDto contactDto, [FromServices] IValidator<ContactDto> validator)
         {
+
+            var validationResult = await validator.ValidateAsync(contactDto);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(new
+                {
+                    Errors = validationResult.Errors
+                        .Select(e => new { e.PropertyName, e.ErrorMessage })
+                });
+            }
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             var contact = new Contact
@@ -68,8 +80,17 @@ namespace ContactManager.Server.Controllers
 
         // PUT: api/contact/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateContact(Guid id, ContactDto contactDto)
+        public async Task<IActionResult> UpdateContact(Guid id, ContactDto contactDto, [FromServices] IValidator<ContactDto> validator)
         {
+            var validationResult = await validator.ValidateAsync(contactDto);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(new
+                {
+                    Errors = validationResult.Errors
+                        .Select(e => new { e.PropertyName, e.ErrorMessage })
+                });
+            }
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var contact = await _context.Contacts
                 .FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
@@ -108,13 +129,5 @@ namespace ContactManager.Server.Controllers
 
             return NoContent();
         }
-    }
-
-    public class ContactDto
-    {
-        public string Name { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string Phone { get; set; } = string.Empty;
-        public string Address { get; set; } = string.Empty;
     }
 }
