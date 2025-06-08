@@ -1,10 +1,10 @@
-import { Injectable } from '@angular/core';
 import {
+  HttpEvent,
+  HttpHandler,
   HttpInterceptor,
   HttpRequest,
-  HttpHandler,
-  HttpEvent,
 } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
 
@@ -12,10 +12,10 @@ import { AuthService } from './auth.service';
 export class AuthInterceptor implements HttpInterceptor {
   constructor(private authService: AuthService) {}
 
-  intercept(
-    req: HttpRequest<any>,
+  intercept<T>(
+    req: HttpRequest<T>,
     next: HttpHandler
-  ): Observable<HttpEvent<any>> {
+  ): Observable<HttpEvent<T>> {
     const currentUser = this.authService.currentUserValue;
 
     if (req.url.includes('/auth/login') || req.url.includes('/auth/register')) {

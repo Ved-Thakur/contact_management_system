@@ -1,5 +1,10 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { ContactService } from 'src/app/services/contact.service';
@@ -12,7 +17,7 @@ import { ContactService } from 'src/app/services/contact.service';
 export class ContactFormComponent implements OnInit, OnDestroy {
   contactForm!: FormGroup;
   contactId: string | null = null;
-  isEditMode = false;
+  isEditMode: boolean = false;
   errorMessage: string = '';
   private destroyed: Subject<void> = new Subject();
 
@@ -69,20 +74,20 @@ export class ContactFormComponent implements OnInit, OnDestroy {
     }
   }
 
-  get name() {
+  get name(): AbstractControl | null {
     return this.contactForm.get('name');
   }
-  get email() {
+  get email(): AbstractControl | null {
     return this.contactForm.get('email');
   }
-  get phone() {
+  get phone(): AbstractControl | null {
     return this.contactForm.get('phone');
   }
-  get address() {
+  get address(): AbstractControl | null {
     return this.contactForm.get('address');
   }
 
-  onSubmit() {
+  onSubmit(): void {
     if (this.contactForm.invalid) return;
     this.errorMessage = '';
 
@@ -111,7 +116,7 @@ export class ContactFormComponent implements OnInit, OnDestroy {
     }
   }
 
-  onCancel() {
+  onCancel(): void {
     this.router.navigate(['/contacts']);
   }
 

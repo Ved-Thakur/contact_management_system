@@ -1,5 +1,10 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from 'src/app/services/auth.service';
@@ -42,11 +47,11 @@ export class LoginComponent implements OnInit, OnDestroy {
     });
   }
 
-  get email() {
+  get email(): AbstractControl | null {
     return this.loginForm.get('email');
   }
 
-  get password() {
+  get password(): AbstractControl | null {
     return this.loginForm.get('password');
   }
 
@@ -58,12 +63,12 @@ export class LoginComponent implements OnInit, OnDestroy {
         .login(this.loginForm.value)
         .pipe(takeUntil(this.destroyed))
         .subscribe({
-          next: (res: any) => {
-            localStorage.setItem('token', res.token);
+          next: (res: { token: string }) => {
             this.router.navigate(['/contacts']);
           },
-          error: (e) => {
-            this.errorMessage = e.error?.message || 'Invalid email or password';
+          error: (err) => {
+            this.errorMessage =
+              err.error?.message || 'Invalid email or password';
           },
         });
     } else {

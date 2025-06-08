@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 
 export interface Contact {
   id: string;
@@ -9,7 +10,6 @@ export interface Contact {
   address: string;
 }
 
-// models/contact-form.model.ts
 export interface ContactFormData {
   name: string;
   email: string;
@@ -23,23 +23,23 @@ export class ContactService {
 
   constructor(private http: HttpClient) {}
 
-  getContacts() {
+  getContacts(): Observable<Contact[]> {
     return this.http.get<Contact[]>(this.API_URL);
   }
 
-  getContact(id: string) {
+  getContact(id: string): Observable<Contact> {
     return this.http.get<Contact>(`${this.API_URL}/${id}`);
   }
 
-  createContact(contact: ContactFormData) {
-    return this.http.post(this.API_URL, contact);
+  createContact(contact: ContactFormData): Observable<Contact> {
+    return this.http.post<Contact>(this.API_URL, contact);
   }
 
-  updateContact(id: string, contact: ContactFormData) {
+  updateContact(id: string, contact: ContactFormData): Observable<Object> {
     return this.http.put(`${this.API_URL}/${id}`, contact);
   }
 
-  deleteContact(id: string) {
+  deleteContact(id: string): Observable<Object> {
     return this.http.delete(`${this.API_URL}/${id}`);
   }
 }

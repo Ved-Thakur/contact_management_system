@@ -19,38 +19,37 @@ export class ContactListComponent implements OnInit, OnDestroy {
     private router: Router
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadContacts();
   }
 
   displayedColumns: string[] = ['name', 'email', 'phone', 'address', 'actions'];
 
-  editContact(contact: Contact) {
+  editContact(contact: Contact): void {
     this.router.navigate(['contacts/edit', contact.id]);
   }
 
-  addContact() {
+  addContact(): void {
     this.router.navigate(['contacts/add']);
   }
 
-  logout() {
+  logout(): void {
     this.authService.logout();
   }
 
-  loadContacts() {
+  loadContacts(): void {
     this.contactsService
       .getContacts()
       .pipe(takeUntil(this.destroyed))
       .subscribe({
         next: (contacts) => {
           this.contacts = contacts;
-          console.log(contacts);
         },
         error: (err) => console.error('Failed to load contacts', err),
       });
   }
 
-  deleteContact(id: string) {
+  deleteContact(id: string): void {
     this.contactsService
       .deleteContact(id)
       .pipe(takeUntil(this.destroyed))

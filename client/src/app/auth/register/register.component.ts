@@ -1,7 +1,12 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Subject, switchMap, takeUntil } from 'rxjs';
+import { Subject, switchMap, takeUntil } from 'rxjs';
 import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
@@ -19,10 +24,6 @@ export class RegisterComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private router: Router
   ) {}
-  ngOnDestroy(): void {
-    this.destroyed.next();
-    this.destroyed.complete();
-  }
 
   ngOnInit(): void {
     this.registerForm = this.fb.group({
@@ -56,15 +57,15 @@ export class RegisterComponent implements OnInit, OnDestroy {
     });
   }
 
-  get name() {
+  get name(): AbstractControl | null {
     return this.registerForm.get('name');
   }
 
-  get email() {
+  get email(): AbstractControl | null {
     return this.registerForm.get('email');
   }
 
-  get password() {
+  get password(): AbstractControl | null {
     return this.registerForm.get('password');
   }
 
@@ -84,8 +85,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
           )
         )
         .subscribe({
-          next: (loginRes: any) => {
-            localStorage.setItem('token', loginRes.token);
+          next: () => {
             this.router.navigate(['/contacts']);
           },
           error: (err) => {
@@ -95,5 +95,10 @@ export class RegisterComponent implements OnInit, OnDestroy {
     } else {
       this.registerForm.markAllAsTouched();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroyed.next();
+    this.destroyed.complete();
   }
 }
