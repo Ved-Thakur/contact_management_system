@@ -38,6 +38,13 @@ namespace ContactManager.Server.Services
                 UserId = userId
             };
 
+            if (await _context.Contacts.AnyAsync(c =>
+                c.UserId == userId &&
+                (c.Email == contactDto.Email || c.Phone == contactDto.Phone)))
+                {
+                    throw new InvalidOperationException("Contact with same email or phone already exists");
+                }
+
             _context.Contacts.Add(contact);
             await _context.SaveChangesAsync();
             return contact;
@@ -49,6 +56,14 @@ namespace ContactManager.Server.Services
                 .FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
 
             if (contact == null) return null;
+
+            if (await _context.Contacts.AnyAsync(c =>
+                c.Id != id && 
+                c.UserId == userId &&
+                (c.Email == contactDto.Email || c.Phone == contactDto.Phone)))
+                {
+                    throw new InvalidOperationException("Another contact with the same email or phone already exists");
+                }
 
             contact.Name = contactDto.Name;
             contact.Email = contactDto.Email;

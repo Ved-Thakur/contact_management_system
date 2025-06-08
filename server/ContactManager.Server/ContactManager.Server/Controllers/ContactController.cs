@@ -54,10 +54,18 @@ public class ContactController : ControllerBase
             });
         }
 
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var contact = await _contactService.CreateContact(contactDto, userId!);
+        try
+        {
 
-        return CreatedAtAction(nameof(GetContact), new { id = contact.Id }, contact);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var contact = await _contactService.CreateContact(contactDto, userId!);
+
+            return CreatedAtAction(nameof(GetContact), new { id = contact.Id }, contact);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     [HttpPut("{id}")]
@@ -80,10 +88,17 @@ public class ContactController : ControllerBase
             });
         }
 
+        try { 
+
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var result = await _contactService.UpdateContact(id, contactDto, userId!);
 
         return result != null ? NoContent() : NotFound();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     [HttpDelete("{id}")]
