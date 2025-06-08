@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { switchMap } from 'rxjs';
 import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
@@ -64,10 +65,31 @@ export class RegisterComponent implements OnInit {
 
   onSubmit(): void {
     if (this.registerForm.valid) {
-      this.authService.register(this.registerForm.value).subscribe({
-        next: () => this.router.navigate(['/auth/login']),
-        error: () => (this.errorMessage = 'Registration failed'),
-      });
+      this.errorMessage = '';
+
+      this.authService
+        .register(this.registerForm.value)
+        .pipe(
+          switchMap(() =>
+            this.authService.login({
+              email: this.registerForm.value.email,
+              password: this.registerForm.value.password,
+            })
+          )
+        )
+        .subscribe({
+          next: (loginRes: any) => {
+            localStorage.setItem('token', loginRes.token);
+            this.router.navigate(['/contacts']);
+          },
+          error: (err) => {
+            this.errorMessage =
+              err.error?.message ||
+              (err.status === 0 ? 'Network error' : 'Registration failed');
+          },
+        });
+    } else {
+      this.registerForm.markAllAsTouched();
     }
   }
 }
