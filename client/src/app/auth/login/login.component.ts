@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
@@ -8,9 +9,10 @@ import { AuthService } from 'src/app/services/auth.service';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, OnDestroy {
   loginForm!: FormGroup;
   errorMessage: string = '';
+  private destroyed: Subject<void> = new Subject();
 
   constructor(
     private fb: FormBuilder,
@@ -40,7 +42,6 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  // Getter methods for easy template access
   get email() {
     return this.loginForm.get('email');
   }
@@ -53,17 +54,25 @@ export class LoginComponent implements OnInit {
     if (this.loginForm.valid) {
       this.errorMessage = '';
 
-      this.authService.login(this.loginForm.value).subscribe({
-        next: (res: any) => {
-          localStorage.setItem('token', res.token);
-          this.router.navigate(['/contacts']);
-        },
-        error: (e) => {
-          this.errorMessage = e.error?.message || 'Invalid email or password';
-        },
-      });
+      this.authService
+        .login(this.loginForm.value)
+        .pipe(takeUntil(this.destroyed))
+        .subscribe({
+          next: (res: any) => {
+            localStorage.setItem('token', res.token);
+            this.router.navigate(['/contacts']);
+          },
+          error: (e) => {
+            this.errorMessage = e.error?.message || 'Invalid email or password';
+          },
+        });
     } else {
       this.loginForm.markAllAsTouched();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroyed.next();
+    this.destroyed.complete();
   }
 }

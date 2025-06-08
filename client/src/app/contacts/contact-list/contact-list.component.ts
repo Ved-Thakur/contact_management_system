@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from 'src/app/services/auth.service';
 import { Contact, ContactService } from 'src/app/services/contact.service';
 
@@ -8,8 +9,9 @@ import { Contact, ContactService } from 'src/app/services/contact.service';
   templateUrl: './contact-list.component.html',
   styleUrls: ['./contact-list.component.css'],
 })
-export class ContactListComponent implements OnInit {
+export class ContactListComponent implements OnInit, OnDestroy {
   contacts: Contact[] = [];
+  private destroyed: Subject<void> = new Subject();
 
   constructor(
     private contactsService: ContactService,
@@ -33,23 +35,33 @@ export class ContactListComponent implements OnInit {
 
   logout() {
     this.authService.logout();
-    // this.router.navigate(['/']);
   }
 
   loadContacts() {
-    this.contactsService.getContacts().subscribe({
-      next: (contacts) => {
-        this.contacts = contacts;
-        console.log(contacts);
-      },
-      error: (err) => console.error('Failed to load contacts', err),
-    });
+    this.contactsService
+      .getContacts()
+      .pipe(takeUntil(this.destroyed))
+      .subscribe({
+        next: (contacts) => {
+          this.contacts = contacts;
+          console.log(contacts);
+        },
+        error: (err) => console.error('Failed to load contacts', err),
+      });
   }
 
   deleteContact(id: string) {
-    this.contactsService.deleteContact(id).subscribe({
-      next: () => (this.contacts = this.contacts.filter((c) => c.id !== id)),
-      error: (err) => console.error('Delete failed', err),
-    });
+    this.contactsService
+      .deleteContact(id)
+      .pipe(takeUntil(this.destroyed))
+      .subscribe({
+        next: () => (this.contacts = this.contacts.filter((c) => c.id !== id)),
+        error: (err) => console.error('Delete failed', err),
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroyed.next();
+    this.destroyed.complete();
   }
 }

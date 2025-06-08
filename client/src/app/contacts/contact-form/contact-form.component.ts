@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 import { ContactService } from 'src/app/services/contact.service';
 
 @Component({
@@ -8,11 +9,12 @@ import { ContactService } from 'src/app/services/contact.service';
   templateUrl: './contact-form.component.html',
   styleUrls: ['./contact-form.component.css'],
 })
-export class ContactFormComponent implements OnInit {
+export class ContactFormComponent implements OnInit, OnDestroy {
   contactForm!: FormGroup;
   contactId: string | null = null;
   isEditMode = false;
   errorMessage: string = '';
+  private destroyed: Subject<void> = new Subject();
 
   constructor(
     private fb: FormBuilder,
@@ -57,10 +59,13 @@ export class ContactFormComponent implements OnInit {
     });
 
     if (this.isEditMode) {
-      this.contactsService.getContact(this.contactId!).subscribe({
-        next: (contact) => this.contactForm.patchValue(contact),
-        error: () => alert('Failed to load contact'),
-      });
+      this.contactsService
+        .getContact(this.contactId!)
+        .pipe(takeUntil(this.destroyed))
+        .subscribe({
+          next: (contact) => this.contactForm.patchValue(contact),
+          error: () => alert('Failed to load contact'),
+        });
     }
   }
 
@@ -86,6 +91,7 @@ export class ContactFormComponent implements OnInit {
     if (this.isEditMode) {
       this.contactsService
         .updateContact(this.contactId!, contactData)
+        .pipe(takeUntil(this.destroyed))
         .subscribe({
           next: () => this.router.navigate(['/']),
           error: (err) => {
@@ -93,16 +99,24 @@ export class ContactFormComponent implements OnInit {
           },
         });
     } else {
-      this.contactsService.createContact(contactData).subscribe({
-        next: () => this.router.navigate(['/']),
-        error: (err) => {
-          this.errorMessage = err.error;
-        },
-      });
+      this.contactsService
+        .createContact(contactData)
+        .pipe(takeUntil(this.destroyed))
+        .subscribe({
+          next: () => this.router.navigate(['/']),
+          error: (err) => {
+            this.errorMessage = err.error;
+          },
+        });
     }
   }
 
   onCancel() {
     this.router.navigate(['/contacts']);
+  }
+
+  ngOnDestroy(): void {
+    this.destroyed.next();
+    this.destroyed.complete();
   }
 }

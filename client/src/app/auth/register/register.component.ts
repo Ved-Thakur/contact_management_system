@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { switchMap } from 'rxjs';
+import { BehaviorSubject, Subject, switchMap, takeUntil } from 'rxjs';
 import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
@@ -9,15 +9,20 @@ import { AuthService } from 'src/app/services/auth.service';
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css'],
 })
-export class RegisterComponent implements OnInit {
+export class RegisterComponent implements OnInit, OnDestroy {
   registerForm!: FormGroup;
   errorMessage: string = '';
+  private destroyed: Subject<void> = new Subject();
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router
   ) {}
+  ngOnDestroy(): void {
+    this.destroyed.next();
+    this.destroyed.complete();
+  }
 
   ngOnInit(): void {
     this.registerForm = this.fb.group({
@@ -70,6 +75,7 @@ export class RegisterComponent implements OnInit {
       this.authService
         .register(this.registerForm.value)
         .pipe(
+          takeUntil(this.destroyed),
           switchMap(() =>
             this.authService.login({
               email: this.registerForm.value.email,
