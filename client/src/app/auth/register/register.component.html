@@ -2,57 +2,76 @@
   <h2>Register</h2>
 
   <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+    <!-- Name Field -->
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Name</mat-label>
       <input
         matInput
         formControlName="name"
-        placeholder="Enter your name"
+        placeholder="Enter your name (3-20 characters)"
         required
       />
-      <mat-error
-        *ngIf="
-          registerForm.get('name')?.invalid && registerForm.get('name')?.touched
-        "
-      >
+      <mat-error *ngIf="name?.errors?.['required'] && name?.touched">
         Name is required
+      </mat-error>
+      <mat-error *ngIf="name?.errors?.['minlength'] && name?.touched">
+        Name must be at least 3 characters
+      </mat-error>
+      <mat-error *ngIf="name?.errors?.['maxlength'] && name?.touched">
+        Name cannot exceed 20 characters
+      </mat-error>
+      <mat-error *ngIf="name?.errors?.['pattern'] && name?.touched">
+        Only letters and spaces allowed
       </mat-error>
     </mat-form-field>
 
+    <!-- Email Field -->
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Email</mat-label>
       <input
         matInput
         formControlName="email"
-        placeholder="Enter your email"
+        placeholder="Enter your email (3-50 characters)"
         required
       />
-      <mat-error
-        *ngIf="
-          registerForm.get('email')?.invalid &&
-          registerForm.get('email')?.touched
-        "
-      >
-        Valid email is required
+      <mat-error *ngIf="email?.errors?.['required'] && email?.touched">
+        Email is required
+      </mat-error>
+      <mat-error *ngIf="email?.errors?.['email'] && email?.touched">
+        Invalid email format
+      </mat-error>
+      <mat-error *ngIf="email?.errors?.['minlength'] && email?.touched">
+        Email must be at least 3 characters
+      </mat-error>
+      <mat-error *ngIf="email?.errors?.['maxlength'] && email?.touched">
+        Email cannot exceed 50 characters
       </mat-error>
     </mat-form-field>
 
+    <!-- Password Field -->
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Password</mat-label>
       <input
         matInput
         type="password"
         formControlName="password"
-        placeholder="Enter your password"
+        placeholder="Enter your password (8-20 characters)"
         required
       />
-      <mat-error
-        *ngIf="
-          registerForm.get('password')?.invalid &&
-          registerForm.get('password')?.touched
-        "
-      >
+      <mat-hint>
+        Must contain: 1 uppercase, 1 lowercase, and 1 number
+      </mat-hint>
+      <mat-error *ngIf="password?.errors?.['required'] && password?.touched">
         Password is required
+      </mat-error>
+      <mat-error *ngIf="password?.errors?.['minlength'] && password?.touched">
+        Password must be at least 8 characters
+      </mat-error>
+      <mat-error *ngIf="password?.errors?.['maxlength'] && password?.touched">
+        Password cannot exceed 20 characters
+      </mat-error>
+      <mat-error *ngIf="password?.errors?.['pattern'] && password?.touched">
+        Must include uppercase, lowercase and number
       </mat-error>
     </mat-form-field>
 
@@ -69,7 +88,7 @@
 
     <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
 
-    <div style="margin-top: 16px">
+    <div class="login-redirect">
       <span>Already registered?</span>
       <a routerLink="/auth/login">Login</a>
     </div>

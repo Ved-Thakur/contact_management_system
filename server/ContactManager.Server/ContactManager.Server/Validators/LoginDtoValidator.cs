@@ -18,10 +18,7 @@ namespace ContactManager.Server.Validators
             RuleFor(x => x.Password)
                 .NotEmpty().WithMessage("Password is required")
                 .MinimumLength(8).WithMessage("Password must be at least 8 characters")
-                .MaximumLength(20).WithMessage("Password cannot exceed 20 characters")
-                .Matches("[A-Z]").WithMessage("Password must contain at least 1 uppercase letter")
-                .Matches("[a-z]").WithMessage("Password must contain at least 1 lowercase letter")
-                .Matches("[0-9]").WithMessage("Password must contain at least 1 number");
+                .MaximumLength(20).WithMessage("Password cannot exceed 20 characters");
         }
     }
 }

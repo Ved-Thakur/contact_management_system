@@ -2,14 +2,49 @@
   <h2>Login</h2>
 
   <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+    <!-- Email Field -->
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Email</mat-label>
-      <input matInput formControlName="email" type="email" required />
+      <input
+        matInput
+        formControlName="email"
+        type="email"
+        placeholder="Enter your email (3-50 characters)"
+        required
+      />
+      <mat-error *ngIf="email?.errors?.['required'] && email?.touched">
+        Email is required
+      </mat-error>
+      <mat-error *ngIf="email?.errors?.['email'] && email?.touched">
+        Invalid email format
+      </mat-error>
+      <mat-error *ngIf="email?.errors?.['minlength'] && email?.touched">
+        Email must be at least 5 characters
+      </mat-error>
+      <mat-error *ngIf="email?.errors?.['maxlength'] && email?.touched">
+        Email cannot exceed 50 characters
+      </mat-error>
     </mat-form-field>
 
+    <!-- Password Field -->
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Password</mat-label>
-      <input matInput formControlName="password" type="password" required />
+      <input
+        matInput
+        formControlName="password"
+        type="password"
+        placeholder="Enter your password (8-20 characters)"
+        required
+      />
+      <mat-error *ngIf="password?.errors?.['required'] && password?.touched">
+        Password is required
+      </mat-error>
+      <mat-error *ngIf="password?.errors?.['minlength'] && password?.touched">
+        Password must be at least 8 characters
+      </mat-error>
+      <mat-error *ngIf="password?.errors?.['maxlength'] && password?.touched">
+        Password cannot exceed 20 characters
+      </mat-error>
     </mat-form-field>
 
     <div class="form-actions">
@@ -19,14 +54,15 @@
         type="submit"
         [disabled]="loginForm.invalid"
       >
-        Login
+        <span>Login</span>
       </button>
     </div>
+
     <div class="error-message" *ngIf="errorMessage">
       {{ errorMessage }}
     </div>
 
-    <div style="margin-top: 16px">
+    <div class="auth-redirect">
       <span>Don't have an account?</span>
       <a routerLink="/auth/register">Register here</a>
     </div>
