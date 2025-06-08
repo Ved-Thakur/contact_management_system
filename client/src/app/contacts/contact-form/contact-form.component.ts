@@ -12,6 +12,7 @@ export class ContactFormComponent implements OnInit {
   contactForm!: FormGroup;
   contactId: string | null = null;
   isEditMode = false;
+  errorMessage: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -63,7 +64,6 @@ export class ContactFormComponent implements OnInit {
     }
   }
 
-  // Getter methods for easy template access
   get name() {
     return this.contactForm.get('name');
   }
@@ -79,6 +79,7 @@ export class ContactFormComponent implements OnInit {
 
   onSubmit() {
     if (this.contactForm.invalid) return;
+    this.errorMessage = '';
 
     const contactData = this.contactForm.value;
 
@@ -87,12 +88,16 @@ export class ContactFormComponent implements OnInit {
         .updateContact(this.contactId!, contactData)
         .subscribe({
           next: () => this.router.navigate(['/']),
-          error: () => alert('Update failed'),
+          error: (err) => {
+            this.errorMessage = err.error;
+          },
         });
     } else {
       this.contactsService.createContact(contactData).subscribe({
         next: () => this.router.navigate(['/']),
-        error: () => alert('Add failed'),
+        error: (err) => {
+          this.errorMessage = err.error;
+        },
       });
     }
   }

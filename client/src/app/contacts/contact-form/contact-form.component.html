@@ -94,6 +94,7 @@
           {{ isEditMode ? "Update" : "Add" }} Contact
         </button>
       </div>
+      <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
     </form>
   </mat-card-content>
 </mat-card>

@@ -83,9 +83,7 @@ export class RegisterComponent implements OnInit {
             this.router.navigate(['/contacts']);
           },
           error: (err) => {
-            this.errorMessage =
-              err.error?.message ||
-              (err.status === 0 ? 'Network error' : 'Registration failed');
+            this.errorMessage = err.error;
           },
         });
     } else {
