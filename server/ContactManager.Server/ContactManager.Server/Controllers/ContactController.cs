@@ -88,12 +88,13 @@ public class ContactController : ControllerBase
             });
         }
 
-        try { 
+        try
+        {
 
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var result = await _contactService.UpdateContact(id, contactDto, userId!);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var result = await _contactService.UpdateContact(id, contactDto, userId!);
 
-        return result != null ? NoContent() : NotFound();
+            return result != null ? NoContent() : NotFound();
         }
         catch (InvalidOperationException ex)
         {

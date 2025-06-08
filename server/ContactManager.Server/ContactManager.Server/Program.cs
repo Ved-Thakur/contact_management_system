@@ -10,8 +10,6 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<ContactService>();
@@ -34,15 +32,12 @@ builder.Services.AddAuthentication("Bearer")
 builder.Services.AddControllers();
 
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterDtoValidator>();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-//builder.Services.AddSwaggerGen();
 
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Contact Manager API", Version = "v1" });
 
-    // Add security definition
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
@@ -53,7 +48,6 @@ builder.Services.AddSwaggerGen(c =>
         BearerFormat = "JWT"
     });
 
-    // Add security requirement
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -85,13 +79,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
-    options.SuppressModelStateInvalidFilter = false; // Must be FALSE for auto-validation
+    options.SuppressModelStateInvalidFilter = false;
 });
 
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

@@ -17,7 +17,6 @@ namespace ContactManager.Server.Services
             _context = context;
         }
 
-        // Returns User on success, null on failure
         public async Task<User?> RegisterUser(RegisterDto dto)
         {
             if (await _context.Users.AnyAsync(u => u.Email == dto.Email))
@@ -37,7 +36,6 @@ namespace ContactManager.Server.Services
             return user;
         }
 
-        // Returns User on success, null on failure
         public async Task<User?> ValidateLogin(LoginDto dto)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);

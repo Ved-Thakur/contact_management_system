@@ -1,11 +1,6 @@
-﻿using ContactManager.Server.Data;
-using ContactManager.Server.Dtos;
-using ContactManager.Server.Models;
+﻿using ContactManager.Server.Dtos;
 using ContactManager.Server.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Cryptography;
-using System.Text;
-using Microsoft.EntityFrameworkCore;
 using FluentValidation;
 
 namespace ContactManager.Server.Controllers
