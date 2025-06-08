@@ -6,78 +6,67 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
 using FluentValidation;
 
 namespace ContactManager.Server.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private static readonly byte[] StaticHmacKey = Encoding.UTF8.GetBytes("static-salt");
-        private readonly AppDbContext _context;
+        private readonly AuthService _authService;
         private readonly TokenService _tokenService;
 
-        public AuthController(AppDbContext context, TokenService tokenService)
+        public AuthController(AuthService authService, TokenService tokenService)
         {
-            _context = context;
+            _authService = authService;
             _tokenService = tokenService;
-             
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<User>> Register(RegisterDto registerDto, [FromServices] IValidator<RegisterDto> validator)
+        public async Task<IActionResult> Register(
+            RegisterDto dto,
+            [FromServices] IValidator<RegisterDto> validator)
         {
+            var validation = await validator.ValidateAsync(dto);
+            if (!validation.IsValid)
+                return BadRequest(new
+                {
+                    Errors = validation.Errors
+                    .GroupBy(e => e.PropertyName)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(e => e.ErrorMessage).ToArray()
+                    )
+                });
 
-            var validationResult = await validator.ValidateAsync(registerDto);
-            if (!validationResult.IsValid)
-            {
-                return BadRequest(validationResult.Errors.Select(e => new {
-                    Field = e.PropertyName,
-                    Error = e.ErrorMessage
-                }));
-            }
-            if (await _context.Users.AnyAsync(u => u.Email == registerDto.Email))
-                return BadRequest("Email already exists.");
-            
-            using var hmac = new HMACSHA512(StaticHmacKey);
-            var user = new User
-            {
-                Name = registerDto.Name,
-                Email = registerDto.Email,
-                PasswordHash = Convert.ToBase64String(
-                    hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password)))
-            };
-
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-
-            return Ok(new { user.Id, user.Email, user.Name });
+            var user = await _authService.RegisterUser(dto);
+            return user != null
+                ? Ok(new { user.Id, user.Email })
+                : BadRequest("Email already exists");
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<string>> Login(LoginDto loginDto, [FromServices] IValidator<LoginDto> validator)
+        public async Task<IActionResult> Login(
+            LoginDto dto,
+            [FromServices] IValidator<LoginDto> validator)
         {
-            var validationResult = await validator.ValidateAsync(loginDto);
-            if (!validationResult.IsValid)
-            {
-                return BadRequest(validationResult.Errors);
-            }
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == loginDto.Email);
-            if (user == null) return Unauthorized("Invalid email.");
+            var validation = await validator.ValidateAsync(dto);
+            if (!validation.IsValid)
+                return BadRequest(new
+                {
+                    Errors = validation.Errors
+                    .GroupBy(e => e.PropertyName)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(e => e.ErrorMessage).ToArray()
+                    )
+                });
 
-            using var hmac = new HMACSHA512(StaticHmacKey);
-            var computedHash = Convert.ToBase64String(
-                hmac.ComputeHash(Encoding.UTF8.GetBytes(loginDto.Password)));
-            
-            
-
-            if (computedHash != user.PasswordHash)
-                return Unauthorized("Invalid password.");
-
-            var token = _tokenService.CreateToken(user);
-            return Ok(new { token });
+            var user = await _authService.ValidateLogin(dto);
+            return user != null
+                ? Ok(new { token = _tokenService.CreateToken(user) })
+                : Unauthorized("Invalid credentials");
         }
     }
 }

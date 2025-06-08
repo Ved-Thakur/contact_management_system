@@ -1,133 +1,97 @@
 ﻿using ContactManager.Server.Data;
-using System.Security.Claims;
+using ContactManager.Server.Dtos;
 using ContactManager.Server.Models;
+using ContactManager.Server.Services;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using ContactManager.Server.Dtos;
-using FluentValidation;
+using System.Security.Claims;
 
-namespace ContactManager.Server.Controllers
+[Authorize]
+[Route("api/[controller]")]
+[ApiController]
+public class ContactController : ControllerBase
 {
-    [Authorize] // All endpoints require authentication
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ContactController : ControllerBase
+    private readonly ContactService _contactService;
+
+    public ContactController(AppDbContext context)
     {
-        private readonly AppDbContext _context;
+        _contactService = new ContactService(context);
+    }
 
-        public ContactController(AppDbContext context)
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<Contact>>> GetContacts()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        return Ok(await _contactService.GetUserContacts(userId!));
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<Contact>> GetContact(Guid id)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var contact = await _contactService.GetUserContact(id, userId!);
+
+        return contact != null ? Ok(contact) : NotFound();
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<Contact>> CreateContact(
+        ContactDto contactDto,
+        [FromServices] IValidator<ContactDto> validator)
+    {
+        var validationResult = await validator.ValidateAsync(contactDto);
+        if (!validationResult.IsValid)
         {
-            _context = context;
+            return BadRequest(new
+            {
+                Errors = validationResult.Errors
+                .GroupBy(e => e.PropertyName)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(e => e.ErrorMessage).ToArray()
+                )
+            });
         }
 
-        // GET: api/contact
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Contact>>> GetContacts()
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var contact = await _contactService.CreateContact(contactDto, userId!);
+
+        return CreatedAtAction(nameof(GetContact), new { id = contact.Id }, contact);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateContact(
+        Guid id,
+        ContactDto contactDto,
+        [FromServices] IValidator<ContactDto> validator)
+    {
+        var validationResult = await validator.ValidateAsync(contactDto);
+        if (!validationResult.IsValid)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            return await _context.Contacts
-                .Where(c => c.UserId == userId)
-                .ToListAsync();
+            return BadRequest(new
+            {
+                Errors = validationResult.Errors
+                .GroupBy(e => e.PropertyName)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(e => e.ErrorMessage).ToArray()
+                )
+            });
         }
 
-        // GET: api/contact/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Contact>> GetContact(Guid id)
-        {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var contact = await _context.Contacts
-                .FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var result = await _contactService.UpdateContact(id, contactDto, userId!);
 
-            if (contact == null)
-            {
-                return NotFound();
-            }
+        return result != null ? NoContent() : NotFound();
+    }
 
-            return contact;
-        }
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteContact(Guid id)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var success = await _contactService.DeleteContact(id, userId!);
 
-        // POST: api/contact
-        [HttpPost]
-        public async Task<ActionResult<Contact>> CreateContact(ContactDto contactDto, [FromServices] IValidator<ContactDto> validator)
-        {
-
-            var validationResult = await validator.ValidateAsync(contactDto);
-            if (!validationResult.IsValid)
-            {
-                return BadRequest(new
-                {
-                    Errors = validationResult.Errors
-                        .Select(e => new { e.PropertyName, e.ErrorMessage })
-                });
-            }
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            var contact = new Contact
-            {
-                Name = contactDto.Name,
-                Email = contactDto.Email,
-                Phone = contactDto.Phone,
-                Address = contactDto.Address,
-                UserId = userId!
-            };
-
-            _context.Contacts.Add(contact);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetContact), new { id = contact.Id }, contact);
-        }
-
-        // PUT: api/contact/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateContact(Guid id, ContactDto contactDto, [FromServices] IValidator<ContactDto> validator)
-        {
-            var validationResult = await validator.ValidateAsync(contactDto);
-            if (!validationResult.IsValid)
-            {
-                return BadRequest(new
-                {
-                    Errors = validationResult.Errors
-                        .Select(e => new { e.PropertyName, e.ErrorMessage })
-                });
-            }
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var contact = await _context.Contacts
-                .FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
-
-            if (contact == null)
-            {
-                return NotFound();
-            }
-
-            contact.Name = contactDto.Name;
-            contact.Email = contactDto.Email;
-            contact.Phone = contactDto.Phone;
-            contact.Address = contactDto.Address;
-
-            _context.Entry(contact).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        // DELETE: api/contact/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteContact(Guid id)
-        {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var contact = await _context.Contacts
-                .FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
-
-            if (contact == null)
-            {
-                return NotFound();
-            }
-
-            _context.Contacts.Remove(contact);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
+        return success ? NoContent() : NotFound();
     }
 }
